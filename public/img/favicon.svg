@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Gobiz">
+  <rect width="64" height="64" rx="14" fill="#16212d"/>
+  <!-- حرف G: حلقه با دهانه بالا-راست و خط افقی (لبه بالای آن هم‌تراز با برش حلقه) -->
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#f2b705" stroke-width="7" stroke-dasharray="78 22.53"/>
+  <path d="M48 35.5H34" stroke="#f2b705" stroke-width="7"/>
+  <!-- مربع سفید: بسته/کالا (Biz) در دهانه G -->
+  <rect x="44" y="12" width="8" height="8" rx="2" fill="#fff"/>
+</svg>
