@@ -1,9 +1,9 @@
 <?php
-namespace App\\Services;
+namespace App\Services;
 
-use App\\Models\\Company;
-use App\\Models\\Rfq;
-use Illuminate\\Support\\Collection;
+use App\Models\Company;
+use App\Models\Rfq;
+use Illuminate\Support\Collection;
 
 class RfqMatchingService
 {
