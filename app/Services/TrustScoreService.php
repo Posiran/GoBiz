@@ -1,8 +1,8 @@
 <?php
-namespace App\\Services;
+namespace App\Services;
 
-use App\\Models\\Company;
-use App\\Models\\TrustScore;
+use App\Models\Company;
+use App\Models\TrustScore;
 
 class TrustScoreService
 {
