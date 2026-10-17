@@ -82,11 +82,17 @@ jobs:
         continue-on-error: true
         run: bash scripts/ci-run.sh "db:seed" php artisan db:seed --force
 
+      - name: Demo seed (dev data)
+        id: demo
+        if: steps.seed.outcome == 'success'
+        continue-on-error: true
+        run: bash scripts/ci-run.sh "DemoSeeder" php artisan db:seed --class=DemoSeeder --force
+
       - name: Tests
         id: tests
         if: ${{ !cancelled() }}
         run: bash scripts/ci-run.sh "php artisan test" php artisan test
 
-      - name: Fail if rollback or seed failed
-        if: ${{ !cancelled() && (steps.rollback.outcome == 'failure' || steps.seed.outcome == 'failure') }}
+      - name: Fail if rollback or seeding failed
+        if: ${{ !cancelled() && (steps.rollback.outcome == 'failure' || steps.seed.outcome == 'failure' || steps.demo.outcome == 'failure') }}
         run: exit 1

@@ -17,7 +17,7 @@ class DemoSeeder extends Seeder {
     public function run(): void {
         if (app()->isProduction()) { $this->command->error('DemoSeeder در production اجرا نمی‌شود.'); return; }
         $city = fn (string $p, string $c) => City::where('name', $c)->whereHas('province', fn ($q) => $q->where('name', $p))->first()
-            ?? throw new \RuntimeException("شهر «$c» پیدا نشد؛ ابتدا GeoSeeder را اجرا کنید.");
+            ?? throw new \RuntimeException("شهر «{$c}» پیدا نشد؛ ابتدا GeoSeeder را اجرا کنید.");
         $town = fn (City $c, ?string $n) => $n ? IndustrialTown::where('city_id', $c->id)->where('name', "شهرک صنعتی $n")->first() : null;
 
         // [نام، نوع، استان، شهر، سطح تأیید]
@@ -34,7 +34,7 @@ class DemoSeeder extends Seeder {
             $cos[] = Company::firstOrCreate(['user_id' => $u->id], [
                 'name' => $name, 'slug' => Listing::makeSlug($name), 'business_type' => $type, 'city_id' => $city($prov, $cname)->id,
                 'status' => 'active', 'verified_level' => $lvl, 'established_year' => 1385 + $i * 4, 'employees_range' => ['51-200', '11-50', '201-500', '11-50'][$i],
-                'description' => "$name؛ تأمین و فروش ماشین‌آلات صنعتی با خدمات پس از فروش و نصب.",
+                'description' => "{$name}؛ تأمین و فروش ماشین‌آلات صنعتی با خدمات پس از فروش و نصب.",
             ]);
         }
 

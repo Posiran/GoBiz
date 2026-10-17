@@ -49,7 +49,7 @@ class ProcurementTest extends TestCase {
         $this->assertFalse(Procurement::canMove('disputed', 'cancelled', 'seller'));
         foreach (['completed', 'cancelled'] as $final) {
             foreach (array_keys(Order::STATUS) as $to) {
-                foreach (['buyer', 'seller', 'admin', 'system'] as $role) $this->assertFalse(Procurement::canMove($final, $to, $role), "$final→$to by $role");
+                foreach (['buyer', 'seller', 'admin', 'system'] as $role) $this->assertFalse(Procurement::canMove($final, $to, $role), "{$final}→{$to} by {$role}");
             }
         }
     }

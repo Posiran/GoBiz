@@ -42,8 +42,9 @@ class PaymentGatewaysTest extends TestCase {
 
     public function test_zarinpal_verify_accepts_100_and_101(): void {
         config(['payment.zarinpal.merchant_id' => 'mid']);
+        $reply = fn (int $code) => ['data' => ['code' => $code, 'ref_id' => 9911, 'card_pan' => '6037****1234'], 'errors' => []];
+        Http::fake(['payment.zarinpal.com/*' => Http::sequence()->push($reply(100))->push($reply(101))]);
         foreach ([100, 101] as $code) {
-            Http::fake(['payment.zarinpal.com/*' => Http::response(['data' => ['code' => $code, 'ref_id' => 9911, 'card_pan' => '6037****1234'], 'errors' => []])]);
             $r = (new ZarinPal)->verify($this->payment(), ['Status' => 'OK', 'Authority' => 'TOK123']);
             $this->assertTrue($r['ok']);
             $this->assertSame('9911', $r['ref']);
@@ -64,9 +65,10 @@ class PaymentGatewaysTest extends TestCase {
 
     public function test_sadad_verify_checks_amount_and_signs_token(): void {
         config(['payment.sadad.terminal_id' => '123', 'payment.sadad.merchant_id' => 'm1', 'payment.sadad.key' => 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3', 'payment.sadad.base_url' => 'https://sadad.shaparak.ir/vpg/api/v0']);
-        Http::fake(['sadad.shaparak.ir/*' => Http::response(['ResCode' => 0, 'Amount' => 1, 'RetrivalRefNo' => '555'])]);
+        Http::fake(['sadad.shaparak.ir/*' => Http::sequence()
+            ->push(['ResCode' => 0, 'Amount' => 1, 'RetrivalRefNo' => '555'])
+            ->push(['ResCode' => 0, 'Amount' => 500000, 'RetrivalRefNo' => '555'])]);
         $this->assertFalse((new Sadad)->verify($this->payment(), ['ResCode' => '0', 'token' => 'TOK123'])['ok']);   // مبلغ نمی‌خواند
-        Http::fake(['sadad.shaparak.ir/*' => Http::response(['ResCode' => 0, 'Amount' => 500000, 'RetrivalRefNo' => '555'])]);
         $r = (new Sadad)->verify($this->payment(), ['ResCode' => '0', 'token' => 'TOK123']);
         $this->assertTrue($r['ok']);
         $this->assertSame('555', $r['ref']);
