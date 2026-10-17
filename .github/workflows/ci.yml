@@ -63,21 +63,30 @@ jobs:
 
       - name: Migrate (fresh)
         id: migrate
-        run: php artisan migrate:fresh --force
+        run: bash scripts/ci-run.sh "migrate:fresh" php artisan migrate:fresh --force
 
       - name: Rollback all (verifies every down())
+        id: rollback
         if: steps.migrate.outcome == 'success'
-        run: php artisan migrate:rollback --force
+        continue-on-error: true
+        run: bash scripts/ci-run.sh "migrate:rollback" php artisan migrate:rollback --force
 
-      - name: Migrate again
+      - name: Migrate fresh again
         id: remigrate
         if: steps.migrate.outcome == 'success'
-        run: php artisan migrate --force
+        run: bash scripts/ci-run.sh "migrate:fresh (2nd)" php artisan migrate:fresh --force
 
       - name: Seed
+        id: seed
         if: steps.remigrate.outcome == 'success'
-        run: php artisan db:seed --force
+        continue-on-error: true
+        run: bash scripts/ci-run.sh "db:seed" php artisan db:seed --force
 
       - name: Tests
+        id: tests
         if: ${{ !cancelled() }}
-        run: php artisan test
+        run: bash scripts/ci-run.sh "php artisan test" php artisan test
+
+      - name: Fail if rollback or seed failed
+        if: ${{ !cancelled() && (steps.rollback.outcome == 'failure' || steps.seed.outcome == 'failure') }}
+        run: exit 1
