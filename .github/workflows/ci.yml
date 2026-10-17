@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'phase-*']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: gobiz_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: gobiz_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      APP_ENV: testing
+      APP_TIMEZONE: Asia/Tehran
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql, soap, curl, zip, openssl
+          coverage: none
+
+      - name: PHP syntax check
+        run: |
+          fail=0
+          while IFS= read -r f; do php -l "$f" >/dev/null || { echo "syntax error: $f"; fail=1; }; done \
+            < <(find app config database routes tests -name '*.php' -type f)
+          exit $fail
+
+      - name: Merge repo onto Laravel 11 skeleton
+        run: bash scripts/bootstrap-laravel.sh
+
+      - name: Migrate (fresh)
+        id: migrate
+        run: php artisan migrate:fresh --force
+
+      - name: Rollback all (verifies every down())
+        if: steps.migrate.outcome == 'success'
+        run: php artisan migrate:rollback --force
+
+      - name: Migrate again
+        id: remigrate
+        if: steps.migrate.outcome == 'success'
+        run: php artisan migrate --force
+
+      - name: Seed
+        if: steps.remigrate.outcome == 'success'
+        run: php artisan db:seed --force
+
+      - name: Tests
+        if: ${{ !cancelled() }}
+        run: php artisan test
