@@ -7,8 +7,13 @@ on:
 
 jobs:
   test:
+    name: test (Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        laravel: ['^12.0', '^13.0']
 
     services:
       mysql:
@@ -35,6 +40,7 @@ jobs:
       CACHE_STORE: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
+      LARAVEL_VERSION: ${{ matrix.laravel }}
 
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +58,7 @@ jobs:
             < <(find app config database routes tests -name '*.php' -type f)
           exit $fail
 
-      - name: Merge repo onto Laravel 11 skeleton
+      - name: Merge repo onto Laravel skeleton
         run: bash scripts/bootstrap-laravel.sh
 
       - name: Migrate (fresh)

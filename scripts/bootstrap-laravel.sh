@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# این ریپو فقط فایل‌های اختصاصی Gobiz است. این اسکریپت آن‌ها را روی یک اسکلت تازه Laravel 11 می‌گذارد.
+# این ریپو فقط فایل‌های اختصاصی Gobiz است. این اسکریپت آن‌ها را روی یک اسکلت تازه Laravel می‌گذارد.
 # هیچ فایل موجودی در ریپو بازنویسی نمی‌شود (cp -n). اجرای دوباره بی‌خطر است.
 #
 # استفاده:  bash scripts/bootstrap-laravel.sh
+# نسخه لاراول: LARAVEL_VERSION="^12.0" (پیش‌فرض). لاراول ۱۱ دیگر پشتیبانی امنیتی ندارد و Composer نصبش را رد می‌کند.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -11,7 +12,7 @@ if [ -f artisan ]; then
 else
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT
-  composer create-project "laravel/laravel:^11.0" "$tmp/app" --no-interaction --prefer-dist
+  composer create-project "laravel/laravel:${LARAVEL_VERSION:-^12.0}" "$tmp/app" --no-interaction --prefer-dist
   cp -rn "$tmp/app/." .
 fi
 
