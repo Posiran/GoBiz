@@ -55,6 +55,8 @@ class StagingGuardTest extends TestCase {
             'groups' => app('router')->getMiddlewareGroups()['web'] ?? null,
             'route_mw' => $route->gatherMiddleware(),
             'pw' => config('gobiz.staging.password'),
+            'file' => file_get_contents(base_path('bootstrap/providers.php')),
+            'cached' => array_map('basename', glob(base_path('bootstrap/cache/*.php'))),
             'providers' => count(app()->getProviders(\App\Providers\GobizServiceProvider::class)),
         ];
         $this->fail('DIAG '.json_encode($info));
