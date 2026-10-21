@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 class Listing extends Model {
     protected $guarded = [];
     protected $casts = ['price_negotiable' => 'boolean', 'is_featured' => 'boolean',
-        'has_installation' => 'boolean', 'published_at' => 'datetime', 'featured_until' => 'datetime', 'expires_at' => 'datetime'];
+        'has_installation' => 'boolean', 'published_at' => 'datetime', 'featured_until' => 'datetime', 'expires_at' => 'datetime', 'fee_paid_at' => 'datetime'];
 
     public static function makeSlug(string $title): string {
         $base = trim(preg_replace('/[^\p{L}\p{N}]+/u', '-', mb_strtolower($title)), '-');
