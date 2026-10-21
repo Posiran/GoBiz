@@ -25,6 +25,8 @@ return new class extends Migration {
     public function down(): void {
         Schema::table('listings', function (Blueprint $t) { $t->dropForeign(['industrial_town_id']); $t->dropColumn('industrial_town_id'); });
         Schema::dropIfExists('industrial_towns');
+        // کلید خارجی province_id بعد از حذف ایندکس یکتا به یک ایندکس نیاز دارد (MySQL خطای 1553)؛ پیش از حذف، ایندکس ساده بساز
+        Schema::table('cities', fn (Blueprint $t) => $t->index('province_id'));
         Schema::table('cities', fn (Blueprint $t) => $t->dropUnique(['province_id', 'name']));
         Schema::table('provinces', fn (Blueprint $t) => $t->dropUnique(['name']));
     }

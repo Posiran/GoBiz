@@ -12,8 +12,14 @@ class Ippanel {
 
     public static function pattern(string $mobile, ?string $patternCode, array $params): bool {
         $c = config('ippanel');
+        // نسخه تست: فقط شماره‌های SMS_ONLY_TO پیامک واقعی می‌گیرند؛ برای بقیه فقط لاگ می‌شود
+        $only = config('gobiz.sms_only_to', []);
+        if ($only && !in_array(self::e164($mobile), array_map([self::class, 'e164'], $only), true)) {
+            Log::info("[ippanel allowlist] skipped $mobile", $params);
+            return true;
+        }
         if (!$c['token'] || !$patternCode || !$c['from']) {
-            if (app()->isLocal()) { Log::info("[ippanel dev] $mobile", $params); return true; }   // فقط توسعه: به‌جای ارسال، لاگ می‌شود
+            if (app()->environment(['local', 'staging'])) { Log::info("[ippanel dev] $mobile", $params); return true; }   // توسعه و نسخه تست: به‌جای ارسال، لاگ می‌شود
             Log::warning('ippanel is not configured');
             return false;
         }
