@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /panel
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /verify-mobile
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /geo/
+Disallow: /categories/
+
+Sitemap: https://gobiz.ir/sitemap.xml
