@@ -29,6 +29,8 @@ class ModerationController extends Controller {
         $a = $r->validate(['action' => 'required|in:approve,reject,feature,unfeature'])['action'];
         if ($a === 'approve' && $listing->company->status !== 'active')
             return back()->withErrors('ابتدا شرکت این آگهی را تأیید (فعال) کنید.');
+        if ($a === 'approve' && \App\Support\Pricing::listingFeeDue($listing))
+            return back()->withErrors('هزینه ثبت این آگهی کسب‌وکار هنوز پرداخت نشده است.');
         match ($a) {
             'approve' => $listing->update(['status' => 'published', 'published_at' => $listing->published_at ?? now(), 'expires_at' => now()->addDays(90)]),
             'reject' => $listing->update(['status' => 'rejected', 'is_featured' => false]),

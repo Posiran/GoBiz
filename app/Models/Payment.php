@@ -7,5 +7,6 @@ class Payment extends Model {
     protected $casts = ['paid_at' => 'datetime'];
     public function user() { return $this->belongsTo(User::class); }
     public function company() { return $this->belongsTo(Company::class); }
+    public function listing() { return $this->belongsTo(Listing::class); }
     public function plan() { return $this->belongsTo(Plan::class); }
 }
