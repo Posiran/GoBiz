@@ -9,7 +9,7 @@ code=$?
 cat "$out"
 if [ "$code" -ne 0 ]; then
   # فریم‌های vendor و خطوط خالی حذف می‌شوند تا خطای اصلی در ۶۰ خط آخر جا بماند
-  msg="$(grep -Ev '^#[0-9]+ .*/vendor/|^\s*$' "$out" | tail -n 60 | tr -d '\r' | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"}1')"
+  msg="$(sed 's/\x1b\[[0-9;]*m//g' "$out" | grep -Ev '^#[0-9]+ .*/vendor/|^\s*$|✓' | tail -n 40 | cut -c1-300 | tr -d '\r' | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"}1')"
   echo "::error title=${title} (exit ${code})::${msg}"
 fi
 exit "$code"
