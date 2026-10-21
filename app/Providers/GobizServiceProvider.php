@@ -2,7 +2,7 @@
 namespace App\Providers;
 
 use App\Http\Middleware\StagingGuard;
-use Illuminate\Routing\Router;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ use Illuminate\Support\ServiceProvider;
 class GobizServiceProvider extends ServiceProvider {
     public function boot(): void {
         // محافظ نسخه تست روی همه صفحه‌های وب (بدون STAGING_PASSWORD هیچ کاری نمی‌کند). /up بیرون گروه web است و باز می‌ماند
-        $this->app->make(Router::class)->prependMiddlewareToGroup('web', StagingGuard::class);
+        $this->app->make(Kernel::class)->prependMiddlewareToGroup('web', StagingGuard::class);
 
         // آدرس بازگشت از درگاه پرداخت باید https باشد
         if (! $this->app->environment(['local', 'testing']) && str_starts_with((string) config('app.url'), 'https://')) {

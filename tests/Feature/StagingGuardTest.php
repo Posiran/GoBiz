@@ -14,7 +14,8 @@ class StagingGuardTest extends TestCase {
 
     public function test_diagnostics(): void {
         $loaded = count(app()->getProviders(\App\Providers\GobizServiceProvider::class));
-        $web = app('router')->getMiddlewareGroups()['web'] ?? [];
+        $web = app(\Illuminate\Contracts\Http\Kernel::class)->getMiddlewareGroups()['web'] ?? [];
+        $this->assertContains(\App\Http\Middleware\StagingGuard::class, app('router')->getMiddlewareGroups()['web'] ?? [], 'router web: '.count(app('router')->getMiddlewareGroups()['web'] ?? []));
         $this->assertSame(1, $loaded, 'provider not loaded');
         $this->assertContains(\App\Http\Middleware\StagingGuard::class, $web, 'web group: '.json_encode($web));
     }
