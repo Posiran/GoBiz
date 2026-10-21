@@ -1,15 +1,32 @@
-name: CI
+# Gobiz — تست و ساخت نسخه قابل استقرار
+#
+#   develop  ← تست‌ها ← شاخه release/staging     (test.gobiz.ir)
+#   main     ← تست‌ها ← شاخه release/production  (gobiz.ir)
+#
+# شاخه‌های release/* نسخه آماده اجرا هستند (اسکلت لاراول + کد پروژه + vendor، بدون فایل‌های توسعه).
+# اسکریپت deploy/deploy.php روی هاست cPanel با Cron آنها را دریافت و نصب می‌کند؛
+# بنابراین هاست به SSH، Git یا Composer نیاز ندارد. راهنما: docs/deploy-cpanel.md
+#
+# نسخه‌ای که ساخته می‌شود دقیقاً همان درختی است که تست شده (composer.lock همان اجرای تست).
+
+name: Test & Build
 
 on:
   push:
-    branches: [main, 'phase-*']
+    branches: [develop, main, 'phase-*']
   pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: test (Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -48,14 +65,14 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, intl, pdo_mysql, soap, curl, zip, openssl
+          extensions: mbstring, intl, pdo_mysql, soap, curl, zip, openssl, fileinfo
           coverage: none
 
       - name: PHP syntax check
         run: |
           fail=0
           while IFS= read -r f; do php -l "$f" >/dev/null || { echo "syntax error: $f"; fail=1; }; done \
-            < <(find app config database routes tests -name '*.php' -type f)
+            < <(find app config database routes tests deploy -name '*.php' -type f)
           exit $fail
 
       - name: Merge repo onto Laravel skeleton
@@ -93,6 +110,90 @@ jobs:
         if: ${{ !cancelled() }}
         run: bash scripts/ci-run.sh "php artisan test" php artisan test
 
+      # همان کارهایی که deploy.php روی هاست انجام می‌دهد: مهاجرت، داده پایه، مدیر اولیه و کش route/config/view/event.
+      # (با Closure در routeها یا خطای Blade این مرحله شکست می‌خورد، نه سایت زنده)
+      - name: Production-like post-deploy (migrate, seed, route/config/view cache)
+        id: postdeploy
+        if: ${{ !cancelled() }}
+        env:
+          ADMIN_MOBILE: '09120000000'
+        run: bash scripts/ci-run.sh "gobiz:post-deploy" bash -c 'php artisan migrate:fresh --force && php artisan gobiz:post-deploy && php artisan route:list --except-vendor | tail -n 5 && php artisan optimize:clear'
+
       - name: Fail if rollback or seeding failed
         if: ${{ !cancelled() && (steps.rollback.outcome == 'failure' || steps.seed.outcome == 'failure' || steps.demo.outcome == 'failure') }}
         run: exit 1
+
+      # فقط یک نسخه لاراول (۱۲) درخت تست‌شده را برای مرحله ساخت نگه می‌دارد
+      - name: Package tested tree
+        if: ${{ matrix.laravel == '^12.0' && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop') }}
+        run: |
+          tar --exclude=./vendor --exclude=./.git --exclude=./node_modules --exclude=./.env \
+              --exclude='./storage/logs/*' --exclude='./bootstrap/cache/*.php' \
+              -czf "$RUNNER_TEMP/tested-tree.tgz" .
+          ls -lh "$RUNNER_TEMP/tested-tree.tgz"
+
+      - name: Upload tested tree
+        if: ${{ matrix.laravel == '^12.0' && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tested-tree
+          path: ${{ runner.temp }}/tested-tree.tgz
+          retention-days: 3
+          if-no-files-found: error
+
+  build:
+    name: ساخت نسخه
+    needs: test
+    if: ${{ github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql, soap, curl, zip, openssl, fileinfo
+          coverage: none
+
+      - name: Download tested tree
+        uses: actions/download-artifact@v4
+        with:
+          name: tested-tree
+          path: ${{ runner.temp }}/in
+
+      - name: Install runtime dependencies (no dev tools, same composer.lock as the tests)
+        run: |
+          set -e
+          mkdir app
+          tar -xzf "$RUNNER_TEMP/in/tested-tree.tgz" -C app
+          cd app
+          test -f composer.lock || { echo "composer.lock missing in tested tree" >&2; exit 1; }
+          composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+          test -f vendor/autoload.php
+          php artisan --version
+
+      - name: Package and push to release branch
+        env:
+          TARGET: ${{ github.ref_name == 'main' && 'release/production' || 'release/staging' }}
+        run: |
+          set -e
+          OUT="$RUNNER_TEMP/release"
+          mkdir -p "$OUT"
+          rsync -a app/ "$OUT/" \
+            --exclude .git --exclude .github --exclude tests --exclude node_modules \
+            --exclude phpunit.xml --exclude .env --exclude docs --exclude scripts \
+            --exclude 'storage/logs/*.log' --exclude 'bootstrap/cache/*.php'
+          test -f "$OUT/artisan" && test -f "$OUT/vendor/autoload.php" && test -f "$OUT/deploy/deploy.php" && test -f "$OUT/.env.example"
+          cat > "$OUT/release.json" <<JSON
+          {"sha": "${GITHUB_SHA}", "branch": "${GITHUB_REF_NAME}", "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "run": "${GITHUB_RUN_NUMBER}"}
+          JSON
+          cd "$OUT"
+          git init -q -b release
+          git config user.name "Gobiz Build"
+          git config user.email "build@gobiz.ir"
+          # -f: فایل‌های vendor که در .gitignore بسته‌ها هستند هم ثبت شوند
+          git add -A -f .
+          git commit -q -m "Build ${GITHUB_REF_NAME} ${GITHUB_SHA::7} (#${GITHUB_RUN_NUMBER})"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${TARGET}"
+          echo "✔ ${TARGET} ← ${GITHUB_SHA::7}" >> "$GITHUB_STEP_SUMMARY"

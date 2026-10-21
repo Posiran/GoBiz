@@ -23,8 +23,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/listings', [ListingController::class, 'index'])->name('listings.index');
-Route::get('/businesses', fn () => redirect()->route('listings.index', ['category' => 'business-startup']))->name('businesses.index');
-Route::get('/startups', fn () => redirect()->route('listings.index', ['type' => 'startup']))->name('startups.index');
+// Route::redirect به‌جای Closure: php artisan route:cache روی پروداکشن با Closure شکست می‌خورد
+Route::redirect('/businesses', '/listings?category=business-startup')->name('businesses.index');
+Route::redirect('/startups', '/listings?type=startup')->name('startups.index');
 Route::get('/listings/{slug}', [ListingController::class, 'show'])->name('listings.show');
 Route::get('/companies', [CompanyDirectoryController::class, 'index'])->name('companies.index');
 Route::get('/companies/{slug}', [CompanyDirectoryController::class, 'show'])->name('companies.show');
@@ -87,8 +88,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-mobile/resend', [VerifyMobileController::class, 'resend'])->middleware('throttle:3,1')->name('verify.resend');
 });
 Route::middleware('guest')->group(function () {
-    Route::get('/forgot-password', fn () => redirect()->route('login'))->name('password.forgot');
-    Route::get('/reset-password', fn () => redirect()->route('login'))->name('password.reset');
+    Route::redirect('/forgot-password', '/login')->name('password.forgot');
+    Route::redirect('/reset-password', '/login')->name('password.reset');
 });
 
 // پلن‌ها و پرداخت آنلاین (زرین‌پال، به‌پرداخت ملت، سداد)

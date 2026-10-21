@@ -31,6 +31,11 @@ php artisan serve
 9. [x] مشخصات فنی هر دسته در فرم آگهی، صفحه آگهی و فیلتر لیست
 8. [x] پلن‌ها و پرداخت آنلاین: زرین‌پال، به‌پرداخت ملت، سداد
 
+## استقرار خودکار (تست و پروداکشن)
+شاخه `develop` خودکار روی نسخه تست (`test.gobiz.ir`) و شاخه `main` روی سایت اصلی (`gobiz.ir`) نصب می‌شود:
+GitHub Actions تست‌ها را روی MySQL اجرا می‌کند، نسخه آماده (همراه vendor) را در `release/staging` یا `release/production` می‌گذارد و `deploy/deploy.php` روی هاست cPanel با Cron آن را می‌گیرد، مهاجرت و کش را اجرا می‌کند و بدون قطعی سوییچ می‌کند. برگشت به نسخه قبلی با ساختن یک فایل ممکن است.
+راهنمای قدم‌به‌قدم: [`docs/deploy-cpanel.md`](docs/deploy-cpanel.md) · CI: [`docs/BOOTSTRAP.md`](docs/BOOTSTRAP.md)
+
 ## داده جغرافیایی
 - `database/data/iran_cities.txt`: ۳۱ استان و شهرستان‌های هر کدام (`استان: شهر۱، شهر۲`).
 - `database/data/industrial_towns.txt`: **نمونه** (`استان | شهر | شهرک۱، شهرک۲`). هر شهر می‌تواند چند شهرک داشته باشد (جدول `industrial_towns`، کلید `city_id`).

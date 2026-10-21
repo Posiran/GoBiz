@@ -11,19 +11,20 @@ php artisan test
 ```
 اسکریپت نیاز به Composer، PHP 8.3+ و افزونه‌های `mbstring`، `intl`، `pdo_mysql` و (برای به‌پرداخت ملت) `soap` دارد.
 
-## CI (GitHub Actions)
-فایل `.github/workflows/ci.yml` روی هر push به `main` و شاخه‌های `phase-*` و هر pull request این مراحل را اجرا می‌کند، با MySQL 8 و PHP 8.3، هم روی لاراول ۱۲ و هم ۱۳ (ماتریس):
+## CI و استقرار (GitHub Actions)
+فایل `.github/workflows/ci.yml` (نام: *Test & Build*) روی هر push به `develop`، `main` و شاخه‌های `phase-*` و هر pull request به `develop`/`main` اجرا می‌شود، با MySQL 8 و PHP 8.3، هم روی لاراول ۱۲ و هم ۱۳ (ماتریس):
 
 1. بررسی نحو همه فایل‌های PHP
 2. ادغام با اسکلت لاراول (`scripts/bootstrap-laravel.sh`)
-3. `migrate:fresh` ← `migrate:rollback` ← `migrate` (تأیید اجرا و rollback همه migrationها)
-4. `db:seed`
-5. `php artisan test`
+3. `migrate:fresh` ← `migrate:rollback` ← `migrate:fresh` (تأیید اجرا و rollback همه migrationها)
+4. `db:seed` و `DemoSeeder`
+5. `php artisan test` (تست‌های Unit و Feature روی MySQL)
+6. شبیه‌سازی پروداکشن: `gobiz:post-deploy` با کش route/config/view/event
 
-این اولین اجرای واقعی پروژه روی MySQL است. نتیجه هر مرحله جدا در تب Actions دیده می‌شود.
+فقط روی `develop` و `main` یک مرحله دوم هم اجرا می‌شود: همان درخت تست‌شده با `composer install --no-dev` به نسخه آماده تبدیل و در `release/staging` (از `develop`) یا `release/production` (از `main`) قرار می‌گیرد. هاست با `deploy/deploy.php` آن را می‌گیرد؛ راهنما: [deploy-cpanel.md](deploy-cpanel.md).
 
 ## محدودیت‌ها
-- تست‌های فعلی همه Unit و بدون دیتابیس‌اند؛ تست Feature با MySQL هنوز نوشته نشده است.
+- تست Feature فعلی: دودآزمایی صفحه‌ها و دسترسی نقش‌ها، سرویس‌های امتیاز/تطبیق و محافظ نسخه تست. جریان کامل ثبت‌نام با OTP، ثبت آگهی، پیش‌فاکتور و سفارش هنوز تست Feature ندارد.
 - ارتباط واقعی با زرین‌پال، ملت، سداد و IPPanel در CI آزمایش نمی‌شود.
 
 ## چرا لاراول ۱۲ و نه ۱۱
