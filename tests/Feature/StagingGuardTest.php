@@ -12,6 +12,13 @@ class StagingGuardTest extends TestCase {
         return ['Authorization' => 'Basic '.base64_encode($user.':'.$pass)];
     }
 
+    public function test_diagnostics(): void {
+        $loaded = count(app()->getProviders(\App\Providers\GobizServiceProvider::class));
+        $web = app('router')->getMiddlewareGroups()['web'] ?? [];
+        $this->assertSame(1, $loaded, 'provider not loaded');
+        $this->assertContains(\App\Http\Middleware\StagingGuard::class, $web, 'web group: '.json_encode($web));
+    }
+
     public function test_inactive_without_password(): void {
         config(['gobiz.staging.password' => '']);
         $r = $this->get('/up');
