@@ -18,7 +18,7 @@ fi
 
 # ثبت Provider پروژه (محافظ نسخه تست و ...) در bootstrap/providers.php اسکلت
 if ! grep -q 'GobizServiceProvider' bootstrap/providers.php; then
-  sed -i 's|App\\Providers\\AppServiceProvider::class,|&\n    App\\Providers\\GobizServiceProvider::class,|' bootstrap/providers.php
+  sed -i 's|AppServiceProvider::class,|&\n    \\App\\Providers\\GobizServiceProvider::class,|' bootstrap/providers.php
   grep -q 'GobizServiceProvider' bootstrap/providers.php || { echo "ERROR: could not register GobizServiceProvider in bootstrap/providers.php" >&2; exit 1; }
 fi
 

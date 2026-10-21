@@ -45,20 +45,4 @@ class StagingGuardTest extends TestCase {
         $this->assertNotSame(401, $this->get('/payment/callback/zarinpal')->getStatusCode());
     }
 
-    public function test_zz_diag(): void {
-        config(['gobiz.staging.user' => 'gobiz', 'gobiz.staging.password' => 'secret']);
-        $r = $this->get('/login');
-        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/login'));
-        $info = [
-            'status' => $r->getStatusCode(),
-            'listeners' => \Illuminate\Support\Facades\Event::hasListeners(\Illuminate\Routing\Events\Routing::class),
-            'groups' => app('router')->getMiddlewareGroups()['web'] ?? null,
-            'route_mw' => $route->gatherMiddleware(),
-            'pw' => config('gobiz.staging.password'),
-            'file' => file_get_contents(base_path('bootstrap/providers.php')),
-            'cached' => array_map('basename', glob(base_path('bootstrap/cache/*.php'))),
-            'providers' => count(app()->getProviders(\App\Providers\GobizServiceProvider::class)),
-        ];
-        $this->fail('DIAG '.json_encode($info));
-    }
 }
