@@ -2,6 +2,7 @@
 namespace App\Providers;
 
 use App\Http\Middleware\StagingGuard;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Routing\Events\Routing;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
@@ -19,6 +20,10 @@ class GobizServiceProvider extends ServiceProvider {
         Event::listen(Routing::class, function () {
             $this->app->make(Router::class)->prependMiddlewareToGroup('web', StagingGuard::class);
         });
+
+        // لاراول ۱۳ نمای پیش‌فرض صفحه‌بندی را پیدا نمی‌کرد (View [default] not found)؛ صریح تعیین می‌شود
+        Paginator::defaultView('pagination::tailwind');
+        Paginator::defaultSimpleView('pagination::simple-tailwind');
 
         // آدرس بازگشت از درگاه پرداخت باید https باشد
         if (! $this->app->environment(['local', 'testing']) && str_starts_with((string) config('app.url'), 'https://')) {
