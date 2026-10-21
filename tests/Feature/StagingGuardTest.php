@@ -12,21 +12,6 @@ class StagingGuardTest extends TestCase {
         return ['Authorization' => 'Basic '.base64_encode($user.':'.$pass)];
     }
 
-    public function test_zz_diag(): void {
-        config(['gobiz.staging.user' => 'gobiz', 'gobiz.staging.password' => 'secret']);
-        $r = $this->get('/login');
-        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/login'));
-        $info = [
-            'status' => $r->getStatusCode(),
-            'listeners' => \Illuminate\Support\Facades\Event::hasListeners(\Illuminate\Routing\Events\Routing::class),
-            'groups' => app('router')->getMiddlewareGroups()['web'] ?? null,
-            'route_mw' => $route->gatherMiddleware(),
-            'pw' => config('gobiz.staging.password'),
-            'providers' => count(app()->getProviders(\App\Providers\GobizServiceProvider::class)),
-        ];
-        $this->fail('DIAG '.json_encode($info));
-    }
-
     public function test_inactive_without_password(): void {
         config(['gobiz.staging.password' => '']);
         $r = $this->get('/up');
@@ -58,5 +43,20 @@ class StagingGuardTest extends TestCase {
         config(['gobiz.staging.user' => 'gobiz', 'gobiz.staging.password' => 'secret']);
         $this->get('/up')->assertOk();
         $this->assertNotSame(401, $this->get('/payment/callback/zarinpal')->getStatusCode());
+    }
+
+    public function test_zz_diag(): void {
+        config(['gobiz.staging.user' => 'gobiz', 'gobiz.staging.password' => 'secret']);
+        $r = $this->get('/login');
+        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/login'));
+        $info = [
+            'status' => $r->getStatusCode(),
+            'listeners' => \Illuminate\Support\Facades\Event::hasListeners(\Illuminate\Routing\Events\Routing::class),
+            'groups' => app('router')->getMiddlewareGroups()['web'] ?? null,
+            'route_mw' => $route->gatherMiddleware(),
+            'pw' => config('gobiz.staging.password'),
+            'providers' => count(app()->getProviders(\App\Providers\GobizServiceProvider::class)),
+        ];
+        $this->fail('DIAG '.json_encode($info));
     }
 }
