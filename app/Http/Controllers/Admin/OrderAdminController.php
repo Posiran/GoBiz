@@ -15,6 +15,7 @@ class OrderAdminController extends Controller {
         $d = $r->validate(['to' => 'required|in:completed,cancelled', 'note' => 'required|string|max:300'], ['note.required' => 'توضیح تصمیم را بنویسید.']);
         try { Procurement::move($order, $d['to'], $r->user(), 'admin', $d['note']); }
         catch (\DomainException $e) { return back()->withErrors($e->getMessage()); }
+        \App\Support\Audit::record('order.resolve', $order, ['to' => $d['to'], 'note' => $d['note']]);
         return back()->with('msg', 'اختلاف بسته شد.');
     }
 }

@@ -48,6 +48,8 @@ class ListingController extends Controller {
             elseif ($u && ($u->isAdmin() || $u->company?->id === $l->company_id)) $access = 'owner';
             elseif ($u) $access = \App\Models\BusinessAccess::where(['listing_id' => $l->id, 'user_id' => $u->id])->value('status');
         }
-        return view('listings.show', ['listing' => $l, 'access' => $access]);
+        // فقط برای صاحب آگهی/مدیر: تعداد سرمایه‌گذاران مناسب (بدون نمایش مشخصات آن‌ها)
+        $investorFit = $access === 'owner' && $l->business ? app(\App\Services\InvestorMatchService::class)->match($l)->where('score', '>=', 60)->count() : null;
+        return view('listings.show', ['listing' => $l, 'access' => $access, 'investorFit' => $investorFit]);
     }
 }

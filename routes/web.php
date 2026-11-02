@@ -71,6 +71,8 @@ Route::middleware(['auth', EnsureMobileVerified::class])->prefix('panel')->name(
     Route::middleware(EnsureHasCompany::class)->group(function () {
         Route::resource('listings', SellerListingController::class)->except('show');
         Route::post('listings/{listing}/feature', [SellerListingController::class, 'feature'])->name('listings.feature');
+        Route::get('leads', [\App\Http\Controllers\Seller\LeadController::class, 'index'])->name('leads.index');
+        Route::post('leads/{lead}', [\App\Http\Controllers\Seller\LeadController::class, 'update'])->name('leads.update');
     });
 });
 
@@ -79,6 +81,7 @@ Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/', [ModerationController::class, 'index'])->name('index');
     Route::post('/companies/{company}', [ModerationController::class, 'company'])->name('company');
     Route::post('/listings/{listing}', [ModerationController::class, 'listing'])->name('listing');
+    Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit');
 });
 
 // تأیید موبایل و OTP با پیامک IPPanel
@@ -97,6 +100,8 @@ Route::middleware(['auth', EnsureMobileVerified::class, EnsureHasCompany::class]
     Route::get('/', [BillingController::class, 'plans'])->name('plans');
     Route::get('/checkout/{plan}', [BillingController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{plan}', [BillingController::class, 'pay'])->middleware('throttle:10,1')->name('pay');
+    Route::get('/listing-fee/{listing}', [BillingController::class, 'listingFee'])->name('listing_fee');
+    Route::post('/listing-fee/{listing}', [BillingController::class, 'payListingFee'])->middleware('throttle:10,1')->name('listing_fee.pay');
     Route::get('/payments/{payment}', [BillingController::class, 'result'])->name('result');
 });
 // بازگشت از بانک: عمومی و بدون CSRF (بانک با POST بین‌سایتی برمی‌گردد)

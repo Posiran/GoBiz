@@ -25,7 +25,9 @@ class RfqController extends Controller {
             'category_id' => 'nullable|exists:categories,id', 'city_id' => 'nullable|exists:cities,id',
             'quantity' => 'nullable|integer|min:1', 'budget' => 'nullable|integer|min:0',
         ]);
-        Rfq::create($d + ['user_id' => $r->user()->id]);
+        $rfq = Rfq::create($d + ['user_id' => $r->user()->id]);
+        try { app(\App\Services\LeadRouter::class)->route($rfq); }
+        catch (\Throwable $e) { \Illuminate\Support\Facades\Log::error('lead routing failed: ' . $e->getMessage()); }   // ثبت درخواست نباید به‌خاطر مسیریابی شکست بخورد
         return redirect()->route('rfq.mine')->with('msg', 'درخواست شما ثبت شد. فروشندگان پیشنهاد خود را در «پیام‌ها» می‌فرستند.');
     }
     public function mine(Request $r) {

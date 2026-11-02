@@ -18,6 +18,7 @@
   <a class="btn" href="{{ route('orders.index') }}">سفارش‌ها</a>
   <a class="btn" href="{{ route('business.access.index') }}">درخواست‌های محرمانه کسب‌وکار</a><a class="btn" href="{{ route('businesses.index') }}">مشاهده بازار کسب‌وکار</a>
   <a class="btn" href="{{ route('rfq.board') }}">درخواست‌های خریداران</a>
+  <a class="btn" href="{{ route('seller.leads.index') }}">سرنخ‌های فروش</a>
   <a class="btn" href="{{ route('inbox.index') }}">پیام‌ها</a>
   <a class="btn" href="{{ route('seller.company.edit') }}">ویرایش اطلاعات شرکت</a></div>
 @endsection

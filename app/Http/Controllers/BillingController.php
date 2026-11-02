@@ -1,9 +1,11 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\Listing;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Payment\Gateways;
 use App\Payment\PaymentException;
+use App\Support\Pricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -30,6 +32,27 @@ class BillingController extends Controller {
             'user_id' => $r->user()->id, 'company_id' => $r->user()->company->id, 'plan_id' => $plan->id,
             'amount' => $plan->price, 'gateway' => $key, 'status' => 'pending', 'description' => "خرید پلن {$plan->name} - Gobiz",
         ]);
+        return $this->begin($p, $g, $key);
+    }
+
+    /** هزینه ثابت ثبت آگهی کسب‌وکار / استارتاپ */
+    public function listingFee(Listing $listing) {
+        abort_unless($listing->company_id === auth()->user()->company->id && Pricing::listingFeeDue($listing), 404);
+        return view('billing.listing-fee', ['listing' => $listing, 'fee' => Pricing::businessListingFee(), 'gateways' => Gateways::available()]);
+    }
+    public function payListingFee(Request $r, Listing $listing) {
+        abort_unless($listing->company_id === $r->user()->company->id && Pricing::listingFeeDue($listing), 404);
+        $key = $r->validate(['gateway' => 'required|string|max:30'])['gateway'];
+        $g = Gateways::available()[$key] ?? null;
+        if (!$g) return back()->withErrors('درگاه انتخابی در دسترس نیست.');
+        $p = Payment::create([
+            'user_id' => $r->user()->id, 'company_id' => $r->user()->company->id, 'listing_id' => $listing->id, 'kind' => 'listing_fee',
+            'amount' => Pricing::businessListingFee(), 'gateway' => $key, 'status' => 'pending', 'description' => "هزینه ثبت آگهی {$listing->title} - Gobiz",
+        ]);
+        return $this->begin($p, $g, $key);
+    }
+
+    private function begin(Payment $p, $g, string $key) {
         try { $s = $g->start($p, route('payment.callback', $key)); }
         catch (PaymentException $e) { $p->update(['status' => 'failed', 'error' => $e->getMessage()]); return back()->withErrors($e->getMessage()); }
         catch (\Throwable $e) {   // timeout/قطعی شبکه (ConnectionException) و خطاهای پیش‌بینی‌نشده
@@ -42,6 +65,6 @@ class BillingController extends Controller {
     }
     public function result(Request $r, Payment $payment) {
         abort_unless($payment->user_id === $r->user()->id, 403);
-        return view('billing.result', ['payment' => $payment->load('plan')]);
+        return view('billing.result', ['payment' => $payment->load('plan', 'listing')]);
     }
 }
