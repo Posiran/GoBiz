@@ -13,7 +13,8 @@
 @if($listing->status !== 'published')@section('robots', 'noindex,nofollow')@endif
 @if(!$listing->business)@push('head')<script type="application/ld+json">@json($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG)</script>@endpush@endif
 @section('content')
-@php($F = '\App\Support\Fa')
+{{-- بلوک کامل @php؛ فرم درون‌خطی @php(...) تا @endphp بعدیِ صفحه را می‌بلعد و $F تعریف نمی‌شد --}}
+@php $F = '\App\Support\Fa'; @endphp
 <div class="crumbs"><a href="{{ route('home') }}">خانه</a> / <a href="{{ route('listings.index', ['category' => $listing->category->slug]) }}">{{ $listing->category->name }}</a></div>
 <div class="detail">
   <article class="box">
