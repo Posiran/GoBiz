@@ -15,7 +15,11 @@
 @if($listing->status !== 'published')
 @section('robots', 'noindex,nofollow')
 @endif
-@if(!$listing->business)@push('head')<script type="application/ld+json">@json($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG)</script>@endpush@endif
+@if(!$listing->business)
+@push('head')
+<script type="application/ld+json">@json($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG)</script>
+@endpush
+@endif
 @section('content')
 @php
   // تعریف به‌صورت بلوک چندخطی است تا با دستورهای دیگر صفحه قاطی نشود

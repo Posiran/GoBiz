@@ -115,4 +115,11 @@ class RuleBasedMatchingTest extends TestCase {
         $this->actingAs($owner->user)->get(route('listings.show', $l->slug))->assertOk()->assertSee('سرمایه‌گذار ثبت‌شده با این آگهی تطابق بالا');
         $this->actingAs($this->user('buyer'))->get(route('listings.show', $l->slug))->assertOk()->assertDontSee('سرمایه‌گذار ثبت‌شده با این آگهی تطابق بالا');
     }
+
+    public function test_regular_listing_page_renders_with_structured_data(): void {
+        $cat = Category::whereNotNull('parent_id')->first();
+        $l = $this->listing($this->company(), $cat, 'machine');
+        $l->update(['price' => 850_000_000, 'brand' => 'Fanuc']);
+        $this->get(route('listings.show', $l->slug))->assertOk()->assertSee('application/ld+json', false)->assertSee($l->title);
+    }
 }
