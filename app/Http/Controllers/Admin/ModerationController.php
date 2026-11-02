@@ -26,6 +26,7 @@ class ModerationController extends Controller {
         $before = $company->only(['status', 'verified_level']);
         $company->update($d);
         \App\Support\Audit::record('company.update', $company, ['from' => $before, 'to' => $d]);
+        app(\App\Services\TrustScoreService::class)->recalculate($company->fresh());
         return back()->with('msg', 'وضعیت شرکت ذخیره شد.');
     }
     public function listing(Request $r, Listing $listing) {

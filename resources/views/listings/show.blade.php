@@ -41,6 +41,7 @@
       $canSee = in_array($access, ['open', 'owner', 'approved'], true);
       $m = $b->metrics($listing->price);
     @endphp
+    @if(($investorFit ?? null) !== null)<div class="alert ok">{{ $F::digits($investorFit) }} سرمایه‌گذار ثبت‌شده با این آگهی تطابق بالا (۶۰٪ به بالا) دارد.</div>@endif
     <h2>اطلاعات کسب‌وکار</h2>
     <table class="spec">
       <tr><th>نوع معامله</th><td>{{ \App\Models\BusinessDetail::SALE_TYPE[$b->sale_type] }}</td></tr>

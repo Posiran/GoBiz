@@ -71,6 +71,8 @@ Route::middleware(['auth', EnsureMobileVerified::class])->prefix('panel')->name(
     Route::middleware(EnsureHasCompany::class)->group(function () {
         Route::resource('listings', SellerListingController::class)->except('show');
         Route::post('listings/{listing}/feature', [SellerListingController::class, 'feature'])->name('listings.feature');
+        Route::get('leads', [\App\Http\Controllers\Seller\LeadController::class, 'index'])->name('leads.index');
+        Route::post('leads/{lead}', [\App\Http\Controllers\Seller\LeadController::class, 'update'])->name('leads.update');
     });
 });
 
