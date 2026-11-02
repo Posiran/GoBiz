@@ -33,6 +33,11 @@ class OrderController extends Controller {
         $role = $this->role($r, $order, $allowed);
         try { Procurement::move($order, $to, $r->user(), $role, $note, $extra); }
         catch (\DomainException $e) { return back()->withErrors($e->getMessage()); }
+        $order->refresh();
+        \App\Support\Audit::record('order.' . $to, $order, ['by' => $role], $r->user()->id);
+        // طرف مقابل از تغییر وضعیت با پیامک مطلع می‌شود
+        $other = $role === 'seller' ? $order->buyer?->mobile : $order->company?->user?->mobile;
+        Procurement::notify($other, 'order_status', ['number' => $order->number, 'status' => Order::STATUS[$to]]);
         return back()->with('msg', 'وضعیت سفارش: ' . Order::STATUS[$to]);
     }
     public function ship(Request $r, Order $order) {

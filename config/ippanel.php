@@ -9,6 +9,8 @@ return [
         'inquiry' => env('IPPANEL_PATTERN_INQUIRY'),  // اختیاری؛ پارامتر: title
         'offer'   => env('IPPANEL_PATTERN_OFFER'),      // اختیاری؛ پارامتر: number (پیش‌فاکتور تازه برای خریدار)
         'access'  => env('IPPANEL_PATTERN_ACCESS'),     // اختیاری؛ پارامتر: title (درخواست دسترسی به اطلاعات محرمانه)
+        'listing' => env('IPPANEL_PATTERN_LISTING'),    // اختیاری؛ پارامترها: title, status (نتیجه بررسی آگهی برای فروشنده)
+        'order_status' => env('IPPANEL_PATTERN_ORDER_STATUS'), // اختیاری؛ پارامترها: number, status (تغییر وضعیت سفارش برای طرف مقابل)
         'order'   => env('IPPANEL_PATTERN_ORDER'),      // اختیاری؛ پارامتر: number (سفارش تازه برای فروشنده)
     ],
 ];

@@ -27,6 +27,7 @@ class PaymentCallbackController extends Controller {
             if ($res['ok']) {
                 $p->update(['status' => 'paid', 'ref_id' => $res['ref'], 'card_pan' => $res['card'], 'paid_at' => now(), 'error' => null]);
                 Billing::activate($p->load(['plan', 'company', 'listing']));
+                \App\Support\Audit::record('payment.paid', $p, ['gateway' => $p->gateway, 'amount' => $p->amount, 'kind' => $p->kind], $p->user_id);
             } else $p->update(['status' => 'failed', 'error' => $res['error']]);
         });
         return redirect()->route('billing.result', $p->id);

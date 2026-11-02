@@ -22,7 +22,10 @@ class ModerationController extends Controller {
         ]);
     }
     public function company(Request $r, Company $company) {
-        $company->update($r->validate(['status' => 'required|in:pending,active,suspended', 'verified_level' => 'required|integer|between:0,2']));
+        $d = $r->validate(['status' => 'required|in:pending,active,suspended', 'verified_level' => 'required|integer|between:0,2']);
+        $before = $company->only(['status', 'verified_level']);
+        $company->update($d);
+        \App\Support\Audit::record('company.update', $company, ['from' => $before, 'to' => $d]);
         return back()->with('msg', 'وضعیت شرکت ذخیره شد.');
     }
     public function listing(Request $r, Listing $listing) {
@@ -37,6 +40,9 @@ class ModerationController extends Controller {
             'feature' => $listing->update(['is_featured' => true, 'featured_until' => now()->addDays(30)]),
             'unfeature' => $listing->update(['is_featured' => false, 'featured_until' => null]),
         };
+        \App\Support\Audit::record("listing.$a", $listing, ['title' => $listing->title]);
+        if (in_array($a, ['approve', 'reject'], true))
+            \App\Support\Procurement::notify($listing->company->user?->mobile, 'listing', ['title' => mb_substr($listing->title, 0, 60), 'status' => $a === 'approve' ? 'منتشر شد' : 'رد شد']);
         return back()->with('msg', 'انجام شد.');
     }
 }
