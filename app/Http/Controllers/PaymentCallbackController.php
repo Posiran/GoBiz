@@ -26,7 +26,7 @@ class PaymentCallbackController extends Controller {
             catch (\Throwable $e) { Log::error("payment {$p->id} verify exception: " . $e->getMessage()); return; }   // pending می‌ماند
             if ($res['ok']) {
                 $p->update(['status' => 'paid', 'ref_id' => $res['ref'], 'card_pan' => $res['card'], 'paid_at' => now(), 'error' => null]);
-                Billing::activate($p->load(['plan', 'company']));
+                Billing::activate($p->load(['plan', 'company', 'listing']));
             } else $p->update(['status' => 'failed', 'error' => $res['error']]);
         });
         return redirect()->route('billing.result', $p->id);

@@ -97,6 +97,8 @@ Route::middleware(['auth', EnsureMobileVerified::class, EnsureHasCompany::class]
     Route::get('/', [BillingController::class, 'plans'])->name('plans');
     Route::get('/checkout/{plan}', [BillingController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{plan}', [BillingController::class, 'pay'])->middleware('throttle:10,1')->name('pay');
+    Route::get('/listing-fee/{listing}', [BillingController::class, 'listingFee'])->name('listing_fee');
+    Route::post('/listing-fee/{listing}', [BillingController::class, 'payListingFee'])->middleware('throttle:10,1')->name('listing_fee.pay');
     Route::get('/payments/{payment}', [BillingController::class, 'result'])->name('result');
 });
 // بازگشت از بانک: عمومی و بدون CSRF (بانک با POST بین‌سایتی برمی‌گردد)
