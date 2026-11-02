@@ -9,8 +9,12 @@
       'offers' => $listing->price ? ['@type' => 'Offer', 'price' => $listing->price * 10, 'priceCurrency' => 'IRR', 'availability' => 'https://schema.org/InStock', 'url' => url()->current()] : null]);
 @endphp
 @section('desc', \Illuminate\Support\Str::limit(preg_replace('/\s+/u', ' ', strip_tags($listing->description ?: $listing->title)), 155))
-@if($img)@section('og_image', asset('storage/' . $img->path))@endif
-@if($listing->status !== 'published')@section('robots', 'noindex,nofollow')@endif
+@if($img)
+@section('og_image', asset('storage/' . $img->path))
+@endif
+@if($listing->status !== 'published')
+@section('robots', 'noindex,nofollow')
+@endif
 @if(!$listing->business)@push('head')<script type="application/ld+json">@json($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG)</script>@endpush@endif
 @section('content')
 @php
