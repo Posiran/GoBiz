@@ -74,6 +74,7 @@ class Procurement {
                 'advance_percent' => $o->advance_percent, 'advance_amount' => $advance, 'delivery_terms' => $o->delivery_terms, 'delivery_place' => $o->delivery_place,
                 'delivery_address' => $address, 'delivery_due_date' => $o->delivery_days ? today()->addDays($o->delivery_days) : null,
                 'inspection_days' => $o->inspection_days, 'warranty_months' => $o->warranty_months, 'payment_terms' => $o->payment_terms, 'notes' => $o->notes,
+                'commission_percent' => Pricing::commissionPercent(), 'commission_amount' => Pricing::commission((int) $o->total),
             ]);
             $order->update(['number' => self::number('ORD', $order->id)]);
             foreach ($o->items as $i) $order->items()->create($i->only(['listing_id', 'title', 'description', 'unit', 'quantity', 'unit_price', 'line_total', 'sort']));

@@ -6,6 +6,10 @@ use App\Models\Subscription;
 class Billing {
     /** فعال‌سازی پلن پس از پرداخت موفق. تمدید همان پلن از انتهای اشتراک فعلی؛ پلن دیگر از همین لحظه (اشتراک قبلی بسته می‌شود). */
     public static function activate(Payment $p): void {
+        if ($p->kind === 'listing_fee') {   // هزینه ثبت آگهی کسب‌وکار
+            if ($p->listing && !$p->listing->fee_paid_at) $p->listing->update(['fee_paid_at' => now()]);
+            return;
+        }
         if (!$p->plan_id || !$p->company_id || Subscription::where('payment_id', $p->id)->exists()) return;
         $plan = $p->plan; $company = $p->company;
         $cur = $company->activeSubscription();

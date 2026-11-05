@@ -22,19 +22,28 @@ class ModerationController extends Controller {
         ]);
     }
     public function company(Request $r, Company $company) {
-        $company->update($r->validate(['status' => 'required|in:pending,active,suspended', 'verified_level' => 'required|integer|between:0,2']));
+        $d = $r->validate(['status' => 'required|in:pending,active,suspended', 'verified_level' => 'required|integer|between:0,2']);
+        $before = $company->only(['status', 'verified_level']);
+        $company->update($d);
+        \App\Support\Audit::record('company.update', $company, ['from' => $before, 'to' => $d]);
+        app(\App\Services\TrustScoreService::class)->recalculate($company->fresh());
         return back()->with('msg', 'وضعیت شرکت ذخیره شد.');
     }
     public function listing(Request $r, Listing $listing) {
         $a = $r->validate(['action' => 'required|in:approve,reject,feature,unfeature'])['action'];
         if ($a === 'approve' && $listing->company->status !== 'active')
             return back()->withErrors('ابتدا شرکت این آگهی را تأیید (فعال) کنید.');
+        if ($a === 'approve' && \App\Support\Pricing::listingFeeDue($listing))
+            return back()->withErrors('هزینه ثبت این آگهی کسب‌وکار هنوز پرداخت نشده است.');
         match ($a) {
             'approve' => $listing->update(['status' => 'published', 'published_at' => $listing->published_at ?? now(), 'expires_at' => now()->addDays(90)]),
             'reject' => $listing->update(['status' => 'rejected', 'is_featured' => false]),
             'feature' => $listing->update(['is_featured' => true, 'featured_until' => now()->addDays(30)]),
             'unfeature' => $listing->update(['is_featured' => false, 'featured_until' => null]),
         };
+        \App\Support\Audit::record("listing.$a", $listing, ['title' => $listing->title]);
+        if (in_array($a, ['approve', 'reject'], true))
+            \App\Support\Procurement::notify($listing->company->user?->mobile, 'listing', ['title' => mb_substr($listing->title, 0, 60), 'status' => $a === 'approve' ? 'منتشر شد' : 'رد شد']);
         return back()->with('msg', 'انجام شد.');
     }
 }

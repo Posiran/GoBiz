@@ -61,6 +61,7 @@ class OtpLoginController extends Controller
         if (!$u) return redirect()->route('login')->withErrors(['mobile' => 'حساب کاربری پیدا نشد.']);
 
         Auth::login($u, true);
+        \App\Support\Audit::record('auth.login', $u, [], $u->id);
         $r->session()->forget('otp_login_mobile');
         $r->session()->regenerate();
 
