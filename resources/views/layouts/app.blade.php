@@ -41,6 +41,6 @@
 @if(session('msg'))<div class="alert ok">{{ session('msg') }}</div>@endif
 @if($errors->any())<div class="alert err">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
 @yield('content')</main>
-<footer><div class="wrap"><span>© Gobiz — همه حقوق محفوظ است</span><span>درباره ما · قوانین · تماس با ما</span></div></footer>
+<footer><div class="wrap"><span>© Gobiz — همه حقوق محفوظ است</span><span><a href="{{ route('pages.show', 'about') }}">درباره ما</a> · <a href="{{ route('pages.show', 'terms') }}">قوانین</a> · <a href="{{ route('pages.show', 'privacy') }}">حریم خصوصی</a> · <a href="{{ route('pages.show', 'contact') }}">تماس با ما</a></span></div></footer>
 </body>
 </html>

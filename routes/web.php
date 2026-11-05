@@ -29,6 +29,7 @@ Route::redirect('/startups', '/listings?type=startup')->name('startups.index');
 Route::get('/listings/{slug}', [ListingController::class, 'show'])->name('listings.show');
 Route::get('/companies', [CompanyDirectoryController::class, 'index'])->name('companies.index');
 Route::get('/companies/{slug}', [CompanyDirectoryController::class, 'show'])->name('companies.show');
+Route::get('/page/{page}', [\App\Http\Controllers\PageController::class, 'show'])->whereIn('page', ['about', 'terms', 'privacy', 'contact'])->name('pages.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/geo/provinces/{province}/cities', [GeoController::class, 'cities']);
 Route::get('/geo/cities/{city}/towns', [GeoController::class, 'towns']);
