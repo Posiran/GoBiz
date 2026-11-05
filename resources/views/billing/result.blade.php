@@ -5,7 +5,8 @@
 <div class="box" style="max-width:520px;margin:24px auto">
   @if($payment->status === 'paid')
     <h1 style="color:var(--ok)">پرداخت موفق</h1>
-    <p>پلن «{{ $payment->plan?->name }}» برای شرکت شما فعال شد.</p>
+    @if($payment->kind === 'listing_fee')<p>هزینه ثبت آگهی «{{ $payment->listing?->title }}» پرداخت شد. آگهی پس از تأیید مدیر منتشر می‌شود.</p>
+    @else<p>پلن «{{ $payment->plan?->name }}» برای شرکت شما فعال شد.</p>@endif
     <p class="meta">مبلغ: {{ $F::price($payment->amount) }} · کد پیگیری: <b dir="ltr">{{ $payment->ref_id }}</b> · {{ $F::jdate($payment->paid_at) }}</p>
   @elseif($payment->status === 'failed')
     <h1 style="color:#c0392b">پرداخت ناموفق</h1>
@@ -13,7 +14,7 @@
     <p class="meta">اگر مبلغی از حساب شما کسر شده، طبق قوانین شاپرک معمولاً ظرف ۷۲ ساعت برگشت داده می‌شود.</p>
   @else
     <h1>در حال بررسی</h1>
-    <p>نتیجه پرداخت هنوز از بانک تأیید نشده است. چند دقیقه بعد همین صفحه را تازه کنید. اگر مبلغ کسر شده و پلن فعال نشد، با پشتیبانی تماس بگیرید.</p>
+    <p>نتیجه پرداخت هنوز از بانک تأیید نشده است. چند دقیقه بعد همین صفحه را تازه کنید. اگر مبلغ کسر شده و پرداخت ثبت نشد، با پشتیبانی تماس بگیرید.</p>
   @endif
   <a class="btn fill" href="{{ route('billing.plans') }}">بازگشت به پلن‌ها</a>
 </div>

@@ -39,15 +39,17 @@ class ListingController extends Controller {
         $l = Listing::where('slug', $slug)->with(['company', 'media', 'factory', 'attributeValues', 'category', 'city', 'industrialTown', 'business'])->firstOrFail();
         $live = $l->status === 'published' && (!$l->expires_at || $l->expires_at->isFuture());
         $u = auth()->user();
-        abort_unless($live || ($u && ($u->isAdmin() || $u->company?->id === $l->company_id)), 404);
+        abort_unless($live || ($u && ($u->isStaff() || $u->company?->id === $l->company_id)), 404);
         if ($live) $l->increment('views');
         // اطلاعات محرمانه کسب‌وکار: open | owner | approved | pending | rejected | null
         $access = null;
         if ($l->business) {
             if (!$l->business->nda_required) $access = 'open';
-            elseif ($u && ($u->isAdmin() || $u->company?->id === $l->company_id)) $access = 'owner';
+            elseif ($u && ($u->isStaff() || $u->company?->id === $l->company_id)) $access = 'owner';
             elseif ($u) $access = \App\Models\BusinessAccess::where(['listing_id' => $l->id, 'user_id' => $u->id])->value('status');
         }
-        return view('listings.show', ['listing' => $l, 'access' => $access]);
+        // فقط برای صاحب آگهی/مدیر: تعداد سرمایه‌گذاران مناسب (بدون نمایش مشخصات آن‌ها)
+        $investorFit = $access === 'owner' && $l->business ? app(\App\Services\InvestorMatchService::class)->match($l)->where('score', '>=', 60)->count() : null;
+        return view('listings.show', ['listing' => $l, 'access' => $access, 'investorFit' => $investorFit]);
     }
 }

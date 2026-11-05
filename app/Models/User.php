@@ -13,4 +13,6 @@ class User extends Authenticatable {
     public function receivedOffers() { return $this->hasMany(Offer::class, 'buyer_user_id'); }
     public function ordersAsBuyer() { return $this->hasMany(Order::class, 'buyer_user_id'); }
     public function isAdmin(): bool { return $this->role === 'admin'; }
+    /** مدیر یا ناظر (بررسی محتوا) */
+    public function isStaff(): bool { return in_array($this->role, ['admin', 'moderator'], true); }
 }

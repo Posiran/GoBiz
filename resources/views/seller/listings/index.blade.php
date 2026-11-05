@@ -10,6 +10,7 @@
 <tr><td><a href="{{ route('listings.show', $l->slug) }}">{{ $l->title }}</a></td>
   <td><span class="badge">{{ $st[$l->status] }}</span></td><td>{{ \App\Support\Fa::digits($l->views) }}</td>
   <td><a class="btn" href="{{ route('seller.listings.edit', $l) }}">ویرایش</a>
+    @if(\App\Support\Pricing::listingFeeDue($l))<a class="btn fill" href="{{ route('billing.listing_fee', $l) }}">پرداخت هزینه ثبت</a>@endif
     @if($l->status === 'published')<form method="post" action="{{ route('seller.listings.feature', $l) }}">@csrf<button title="با سهمیه پلن، ۳۰ روز">ویژه</button></form>@endif
     <form method="post" action="{{ route('seller.listings.destroy', $l) }}" onsubmit="return confirm('این آگهی حذف شود؟')">@csrf @method('DELETE')<button>حذف</button></form></td></tr>
 @endforeach</table>

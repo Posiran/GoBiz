@@ -30,7 +30,7 @@
 @auth
 @php($unread = \App\Models\Inquiry::where('to_user_id', auth()->id())->where('status', 'new')->count())
 <a class="btn" href="{{ route('inbox.index') }}">پیام‌ها@if($unread) <span class="badge" style="background:var(--accent);color:var(--accent-ink);border-color:var(--accent)">{{ \App\Support\Fa::digits($unread) }}</span>@endif</a>
-<a class="btn" href="{{ auth()->user()->isAdmin() ? route('admin.index') : route('seller.dashboard') }}">{{ auth()->user()->isAdmin() ? 'پنل مدیریت' : 'پنل من' }}</a>
+<a class="btn" href="{{ auth()->user()->isStaff() ? route('admin.index') : route('seller.dashboard') }}">{{ auth()->user()->isStaff() ? 'پنل مدیریت' : 'پنل من' }}</a>
 <form method="post" action="{{ route('logout') }}" style="display:inline">@csrf<button class="btn" style="background:none;color:inherit;cursor:pointer;font:inherit">خروج</button></form>
 @else
 <a class="btn" href="{{ route('businesses.index') }}">خرید کسب‌وکار</a><a class="btn" href="{{ route('login') }}">ورود</a><a class="btn fill" href="{{ route('register') }}">ثبت آگهی رایگان</a>
@@ -41,6 +41,6 @@
 @if(session('msg'))<div class="alert ok">{{ session('msg') }}</div>@endif
 @if($errors->any())<div class="alert err">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
 @yield('content')</main>
-<footer><div class="wrap"><span>© Gobiz — همه حقوق محفوظ است</span><span>درباره ما · قوانین · تماس با ما</span></div></footer>
+<footer><div class="wrap"><span>© Gobiz — همه حقوق محفوظ است</span><span><a href="{{ route('pages.show', 'about') }}">درباره ما</a> · <a href="{{ route('pages.show', 'terms') }}">قوانین</a> · <a href="{{ route('pages.show', 'privacy') }}">حریم خصوصی</a> · <a href="{{ route('pages.show', 'contact') }}">تماس با ما</a></span></div></footer>
 </body>
 </html>

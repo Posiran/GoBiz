@@ -29,6 +29,7 @@ Route::redirect('/startups', '/listings?type=startup')->name('startups.index');
 Route::get('/listings/{slug}', [ListingController::class, 'show'])->name('listings.show');
 Route::get('/companies', [CompanyDirectoryController::class, 'index'])->name('companies.index');
 Route::get('/companies/{slug}', [CompanyDirectoryController::class, 'show'])->name('companies.show');
+Route::get('/page/{page}', [\App\Http\Controllers\PageController::class, 'show'])->whereIn('page', ['about', 'terms', 'privacy', 'contact'])->name('pages.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/geo/provinces/{province}/cities', [GeoController::class, 'cities']);
 Route::get('/geo/cities/{city}/towns', [GeoController::class, 'towns']);
@@ -71,14 +72,19 @@ Route::middleware(['auth', EnsureMobileVerified::class])->prefix('panel')->name(
     Route::middleware(EnsureHasCompany::class)->group(function () {
         Route::resource('listings', SellerListingController::class)->except('show');
         Route::post('listings/{listing}/feature', [SellerListingController::class, 'feature'])->name('listings.feature');
+        Route::get('leads', [\App\Http\Controllers\Seller\LeadController::class, 'index'])->name('leads.index');
+        Route::post('leads/{lead}', [\App\Http\Controllers\Seller\LeadController::class, 'update'])->name('leads.update');
     });
 });
 
 // پنل مدیریت
-Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsureStaff::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [ModerationController::class, 'index'])->name('index');
     Route::post('/companies/{company}', [ModerationController::class, 'company'])->name('company');
     Route::post('/listings/{listing}', [ModerationController::class, 'listing'])->name('listing');
+});
+Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit');
 });
 
 // تأیید موبایل و OTP با پیامک IPPanel
@@ -97,6 +103,8 @@ Route::middleware(['auth', EnsureMobileVerified::class, EnsureHasCompany::class]
     Route::get('/', [BillingController::class, 'plans'])->name('plans');
     Route::get('/checkout/{plan}', [BillingController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{plan}', [BillingController::class, 'pay'])->middleware('throttle:10,1')->name('pay');
+    Route::get('/listing-fee/{listing}', [BillingController::class, 'listingFee'])->name('listing_fee');
+    Route::post('/listing-fee/{listing}', [BillingController::class, 'payListingFee'])->middleware('throttle:10,1')->name('listing_fee.pay');
     Route::get('/payments/{payment}', [BillingController::class, 'result'])->name('result');
 });
 // بازگشت از بانک: عمومی و بدون CSRF (بانک با POST بین‌سایتی برمی‌گردد)
@@ -146,4 +154,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureMobileVerified::class])->g
         Route::get('/access-requests', [$B, 'index'])->name('business.access.index');
         Route::post('/access-requests/{access}', [$B, 'review'])->name('business.access.review');
     });
+});
+
+// معاملات کسب‌وکار: اتاق داده، نامه قصد (LOI)، مذاکره
+Route::middleware(['auth', \App\Http\Middleware\EnsureMobileVerified::class])->group(function () {
+    $D = \App\Http\Controllers\DealController::class;
+    Route::get('/listings/{listing}/data-room', [$D, 'room'])->name('dataroom.show');
+    Route::post('/listings/{listing}/data-room', [$D, 'upload'])->middleware('throttle:20,1')->name('dataroom.upload');
+    Route::get('/data-room/documents/{doc}', [$D, 'download'])->name('dataroom.download');
+    Route::delete('/data-room/documents/{doc}', [$D, 'destroyDoc'])->name('dataroom.destroy');
+    Route::post('/listings/{listing}/loi', [$D, 'store'])->middleware('throttle:10,1')->name('deals.store');
+    Route::get('/panel/deals', [$D, 'index'])->name('deals.index');
+    Route::get('/panel/deals/{deal}', [$D, 'show'])->name('deals.show');
+    Route::post('/panel/deals/{deal}/messages', [$D, 'message'])->middleware('throttle:30,1')->name('deals.message');
+    Route::post('/panel/deals/{deal}/decide', [$D, 'decide'])->name('deals.decide');
 });
