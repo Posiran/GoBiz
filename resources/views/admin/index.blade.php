@@ -6,6 +6,7 @@
 @php($cst = ['pending' => 'در انتظار', 'active' => 'فعال', 'suspended' => 'تعلیق‌شده'])
 <div class="tabs">
   <a href="{{ route('admin.orders.index') }}">سفارش‌ها و اختلاف‌ها</a>
+  <a href="{{ route('admin.audit') }}">گزارش اقدام‌ها</a>
   <a class="{{ $tab === 'listings' ? 'on' : '' }}" href="{{ route('admin.index', ['tab' => 'listings']) }}">آگهی‌ها ({{ $F::digits($counts['listings']) }} در انتظار)</a>
   <a class="{{ $tab === 'payments' ? 'on' : '' }}" href="{{ route('admin.index', ['tab' => 'payments']) }}">پرداخت‌ها</a>
   <a class="{{ $tab === 'companies' ? 'on' : '' }}" href="{{ route('admin.index', ['tab' => 'companies']) }}">شرکت‌ها ({{ $F::digits($counts['companies']) }} در انتظار)</a>
