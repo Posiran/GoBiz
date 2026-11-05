@@ -78,10 +78,12 @@ Route::middleware(['auth', EnsureMobileVerified::class])->prefix('panel')->name(
 });
 
 // پنل مدیریت
-Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsureStaff::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [ModerationController::class, 'index'])->name('index');
     Route::post('/companies/{company}', [ModerationController::class, 'company'])->name('company');
     Route::post('/listings/{listing}', [ModerationController::class, 'listing'])->name('listing');
+});
+Route::middleware(['auth', EnsureAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit');
 });
 
