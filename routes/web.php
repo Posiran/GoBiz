@@ -152,3 +152,17 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureMobileVerified::class])->g
         Route::post('/access-requests/{access}', [$B, 'review'])->name('business.access.review');
     });
 });
+
+// معاملات کسب‌وکار: اتاق داده، نامه قصد (LOI)، مذاکره
+Route::middleware(['auth', \App\Http\Middleware\EnsureMobileVerified::class])->group(function () {
+    $D = \App\Http\Controllers\DealController::class;
+    Route::get('/listings/{listing}/data-room', [$D, 'room'])->name('dataroom.show');
+    Route::post('/listings/{listing}/data-room', [$D, 'upload'])->middleware('throttle:20,1')->name('dataroom.upload');
+    Route::get('/data-room/documents/{doc}', [$D, 'download'])->name('dataroom.download');
+    Route::delete('/data-room/documents/{doc}', [$D, 'destroyDoc'])->name('dataroom.destroy');
+    Route::post('/listings/{listing}/loi', [$D, 'store'])->middleware('throttle:10,1')->name('deals.store');
+    Route::get('/panel/deals', [$D, 'index'])->name('deals.index');
+    Route::get('/panel/deals/{deal}', [$D, 'show'])->name('deals.show');
+    Route::post('/panel/deals/{deal}/messages', [$D, 'message'])->middleware('throttle:30,1')->name('deals.message');
+    Route::post('/panel/deals/{deal}/decide', [$D, 'decide'])->name('deals.decide');
+});

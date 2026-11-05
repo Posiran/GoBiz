@@ -16,7 +16,7 @@
   <a class="btn" href="{{ route('billing.plans') }}">پلن و پرداخت</a>
   <a class="btn" href="{{ route('offers.index', ['tab' => 'issued']) }}">پیش‌فاکتورها</a>
   <a class="btn" href="{{ route('orders.index') }}">سفارش‌ها</a>
-  <a class="btn" href="{{ route('business.access.index') }}">درخواست‌های محرمانه کسب‌وکار</a><a class="btn" href="{{ route('businesses.index') }}">مشاهده بازار کسب‌وکار</a>
+  <a class="btn" href="{{ route('deals.index') }}">معامله‌ها (LOI)</a><a class="btn" href="{{ route('business.access.index') }}">درخواست‌های محرمانه کسب‌وکار</a><a class="btn" href="{{ route('businesses.index') }}">مشاهده بازار کسب‌وکار</a>
   <a class="btn" href="{{ route('rfq.board') }}">درخواست‌های خریداران</a>
   <a class="btn" href="{{ route('seller.leads.index') }}">سرنخ‌های فروش</a>
   <a class="btn" href="{{ route('inbox.index') }}">پیام‌ها</a>
